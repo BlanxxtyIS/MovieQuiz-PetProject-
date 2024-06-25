@@ -12,6 +12,10 @@
 		F43869B82C29F35700B2E5FD /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F43869B72C29F35700B2E5FD /* ViewController.swift */; };
 		F43869BD2C29F35A00B2E5FD /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F43869BC2C29F35A00B2E5FD /* Assets.xcassets */; };
 		F43869C02C29F35A00B2E5FD /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = F43869BE2C29F35A00B2E5FD /* LaunchScreen.storyboard */; };
+		F43869D02C2AB18600B2E5FD /* YS Display-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = F43869CE2C2AB18600B2E5FD /* YS Display-Medium.ttf */; };
+		F43869D12C2AB18600B2E5FD /* YS Display-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = F43869CF2C2AB18600B2E5FD /* YS Display-Bold.ttf */; };
+		F43869D52C2AB6D900B2E5FD /* ColorExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = F43869D42C2AB6D900B2E5FD /* ColorExtension.swift */; };
+		F43869D72C2AEC2300B2E5FD /* ViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F43869D62C2AEC2300B2E5FD /* ViewModel.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -22,6 +26,10 @@
 		F43869BC2C29F35A00B2E5FD /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		F43869BF2C29F35A00B2E5FD /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		F43869C12C29F35A00B2E5FD /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		F43869CE2C2AB18600B2E5FD /* YS Display-Medium.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "YS Display-Medium.ttf"; sourceTree = "<group>"; };
+		F43869CF2C2AB18600B2E5FD /* YS Display-Bold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "YS Display-Bold.ttf"; sourceTree = "<group>"; };
+		F43869D42C2AB6D900B2E5FD /* ColorExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorExtension.swift; sourceTree = "<group>"; };
+		F43869D62C2AEC2300B2E5FD /* ViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModel.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -54,6 +62,9 @@
 		F43869B22C29F35700B2E5FD /* MovieQuiz */ = {
 			isa = PBXGroup;
 			children = (
+				F43869D82C2AEFB700B2E5FD /* Models */,
+				F43869D32C2AB6CA00B2E5FD /* Extensions */,
+				F43869CD2C2AB16800B2E5FD /* Resources */,
 				F43869B32C29F35700B2E5FD /* AppDelegate.swift */,
 				F43869B52C29F35700B2E5FD /* SceneDelegate.swift */,
 				F43869B72C29F35700B2E5FD /* ViewController.swift */,
@@ -62,6 +73,39 @@
 				F43869C12C29F35A00B2E5FD /* Info.plist */,
 			);
 			path = MovieQuiz;
+			sourceTree = "<group>";
+		};
+		F43869CD2C2AB16800B2E5FD /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				F43869D22C2AB18800B2E5FD /* Fonts */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		F43869D22C2AB18800B2E5FD /* Fonts */ = {
+			isa = PBXGroup;
+			children = (
+				F43869CF2C2AB18600B2E5FD /* YS Display-Bold.ttf */,
+				F43869CE2C2AB18600B2E5FD /* YS Display-Medium.ttf */,
+			);
+			path = Fonts;
+			sourceTree = "<group>";
+		};
+		F43869D32C2AB6CA00B2E5FD /* Extensions */ = {
+			isa = PBXGroup;
+			children = (
+				F43869D42C2AB6D900B2E5FD /* ColorExtension.swift */,
+			);
+			path = Extensions;
+			sourceTree = "<group>";
+		};
+		F43869D82C2AEFB700B2E5FD /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				F43869D62C2AEC2300B2E5FD /* ViewModel.swift */,
+			);
+			path = Models;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -123,7 +167,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				F43869C02C29F35A00B2E5FD /* LaunchScreen.storyboard in Resources */,
+				F43869D02C2AB18600B2E5FD /* YS Display-Medium.ttf in Resources */,
 				F43869BD2C29F35A00B2E5FD /* Assets.xcassets in Resources */,
+				F43869D12C2AB18600B2E5FD /* YS Display-Bold.ttf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -134,9 +180,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F43869D72C2AEC2300B2E5FD /* ViewModel.swift in Sources */,
 				F43869B82C29F35700B2E5FD /* ViewController.swift in Sources */,
 				F43869B42C29F35700B2E5FD /* AppDelegate.swift in Sources */,
 				F43869B62C29F35700B2E5FD /* SceneDelegate.swift in Sources */,
+				F43869D52C2AB6D900B2E5FD /* ColorExtension.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
