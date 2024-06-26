@@ -184,7 +184,9 @@ class ViewController: UIViewController {
         }
         currentQuestionIndex += 1
         isEnabledButton(false)
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
+            guard let self = self else { return }
             self.questionImage.layer.borderWidth = 0
             self.showQuestion()
         }
@@ -229,9 +231,11 @@ class ViewController: UIViewController {
             message: quiz.text,
             preferredStyle: .alert)
         
-        let action = UIAlertAction(title: quiz.buttonText, style: .default) { _ in
+        let action = UIAlertAction(title: quiz.buttonText, style: .default) { [weak self] _ in
+            guard let self = self else { return }
             self.newQuizRound()
         }
+        
         alert.addAction(action)
         present(alert, animated: true)
     }
