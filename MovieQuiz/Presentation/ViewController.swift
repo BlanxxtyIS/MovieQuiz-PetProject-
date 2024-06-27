@@ -6,40 +6,22 @@
 //
 
 import UIKit
-
 //Шрифт?
 class ViewController: UIViewController {
+    
     //MARK: - Public Properties
     
     //MARK: - Private Properties
+    
+    private var questionFactory: QuestionFactoryProtocol?
+    private let questionAmount = 5
+    private var currentQuestion: QuizQuestion?
+    private var alertPresenter: AlertPresenterProtocol?
 
     //индекс текущего вопроса
     private var currentQuestionIndex = 0
     //кол-во правильных ответов
     private var correctAnswers = 0
-    
-    private var questions: [QuizQuestion] = [
-        QuizQuestion(
-            image: "1",
-            text: "Рейтинг этого фильма больше 7?",
-            correctAnser: true),
-        QuizQuestion(
-            image: "2",
-            text: "Рейтинг этого фильма больше 3?",
-            correctAnser: true),
-        QuizQuestion(
-            image: "3",
-            text: "Рейтинг этого фильма больше 5?",
-            correctAnser: false),
-        QuizQuestion(
-            image: "4", 
-            text: "Рейтинг этого фильма больше 8?", 
-            correctAnser: false),
-        QuizQuestion(
-            image: "5", 
-            text: "Рейтинг этого фильма больше 6?", 
-            correctAnser: true),
-    ]
     
     private lazy var questionTitle: UILabel = {
         let label = UILabel()
@@ -112,7 +94,8 @@ class ViewController: UIViewController {
     }()
     
     private lazy var buttonStack: UIStackView = {
-       let stack = UIStackView(arrangedSubviews: [noButton, yesButton])
+       let stack = UIStackView(arrangedSubviews: [noButton, 
+                                                  yesButton])
         stack.axis = .horizontal
         stack.alignment = .fill
         stack.distribution = .fillEqually
@@ -121,10 +104,11 @@ class ViewController: UIViewController {
     }()
     
     private lazy var fullScreenStack: UIStackView = {
-        let stack = UIStackView(arrangedSubviews: [topLabelStackView, 
-                                                   questionImage,
-                                                   questionLabel,
-                                                   buttonStack])
+        let stack = UIStackView(arrangedSubviews: [
+            topLabelStackView,
+            questionImage,
+            questionLabel,
+            buttonStack])
         stack.axis = .vertical
         stack.alignment = .fill
         stack.distribution = .fill
@@ -138,23 +122,27 @@ class ViewController: UIViewController {
         super.viewDidLoad()
         view.backgroundColor = .theme.bBlack
         setupViews()
-        showQuestion()
+        questionFactory = QuestionFactory(delegate: self)
+        questionFactory?.requestNextQuestion()
+        
+        alertPresenter = AlertPresenter(delegate: self)
     }
     //MARK: - Public Methods
     
     //MARK: - Private Methods
     @objc
     private func noButtonTapped() {
-        let givenAnswer = false
-        let currentQuestion = questions[currentQuestionIndex].correctAnser
-        showAnswerResult(isCorrect: givenAnswer == currentQuestion)
+        handleAnswer(false)
     }
     
     @objc
     private func yesButtonTapped() {
-        let givenAnswer = true
-        let currentQuestion = questions[currentQuestionIndex].correctAnser
-        showAnswerResult(isCorrect: givenAnswer == currentQuestion)
+        handleAnswer(true)
+    }
+    
+    private func handleAnswer(_ answer: Bool) {
+        guard let currentQuestion = currentQuestion else { return }
+        showAnswerResult(isCorrect: answer == currentQuestion.correctAnser)
     }
     
     private func setupViews() {
@@ -172,7 +160,6 @@ class ViewController: UIViewController {
         ])
     }
     
-    //Ответ положительный/отрицательный
     private func showAnswerResult(isCorrect: Bool) {
         questionImage.layer.borderWidth = 8
         questionImage.layer.cornerRadius = 16
@@ -192,52 +179,40 @@ class ViewController: UIViewController {
         }
     }
     
-    //Ветвление продолжить или окончить
     private func showQuestion() {
         isEnabledButton(true)
-        if currentQuestionIndex == questions.count {
+        if currentQuestionIndex == questionAmount {
             let viewModel = QuizResultsViewModel(
                 title: "Этот раунд окончен!",
-                text: "Ваш результат: \(correctAnswers)/\(questions.count)",
+                text: "Ваш результат: \(correctAnswers)/\(questionAmount)",
                 buttonText: "Сыграть еще раз")
-            
             endRoundAlert(viewModel)
         } else {
-            setupToShowQuestion()
+            questionFactory?.requestNextQuestion()
         }
     }
     
-    //Показывает на экране текущий вопрос
-    private func setupToShowQuestion() {
-        let currentQuestion = convert(model: questions[currentQuestionIndex])
-        questionCount.text = currentQuestion.questionNumber
-        questionImage.image = currentQuestion.image
-        questionLabel.text = currentQuestion.question
+    private func setupToShowQuestion(quiz: QuizStepViewModel) {
+        questionCount.text = quiz.questionNumber
+        questionImage.image = quiz.image
+        questionLabel.text = quiz.question
     }
     
-    //Конвертирует Mock-данные
     private func convert(model: QuizQuestion) -> QuizStepViewModel {
         let convertedQuestion = QuizStepViewModel(
-            questionNumber: "\(currentQuestionIndex + 1)/\(questions.count)",
+            questionNumber: "\(currentQuestionIndex + 1)/\(questionAmount)",
             image: UIImage(named: model.image) ?? UIImage(),
             question: model.text)
         return convertedQuestion
     }
     
-    //Алерт окончания игры
     private func endRoundAlert(_ quiz: QuizResultsViewModel) {
-        let alert = UIAlertController(
+        let alertModel = AlertModel(
             title: quiz.title,
             message: quiz.text,
-            preferredStyle: .alert)
-        
-        let action = UIAlertAction(title: quiz.buttonText, style: .default) { [weak self] _ in
-            guard let self = self else { return }
-            self.newQuizRound()
-        }
-        
-        alert.addAction(action)
-        present(alert, animated: true)
+            buttonText: quiz.buttonText,
+            completion: newQuizRound)
+        alertPresenter?.presentAlert(alertModel)
     }
     
     private func newQuizRound() {
@@ -249,5 +224,24 @@ class ViewController: UIViewController {
     private func isEnabledButton(_ isEnabled: Bool) {
         yesButton.isEnabled = isEnabled
         noButton.isEnabled = isEnabled
+    }
+}
+
+extension ViewController: QuestionFactoryDelegate {
+    func didReceiveNextQuestion(question: QuizQuestion?) {
+        if let question = question {
+            currentQuestion = question
+            let currentQuestion = question
+            let viewModel = convert(model: currentQuestion)
+            DispatchQueue.main.async { [weak self] in
+                self?.setupToShowQuestion(quiz: viewModel)
+            }
+        }
+    }
+}
+
+extension ViewController: AlertPresenterDelegate {
+    func endOfGame(_ alert: UIAlertController) {
+        present(alert, animated: true)
     }
 }
