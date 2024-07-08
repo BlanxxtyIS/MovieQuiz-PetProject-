@@ -12,9 +12,10 @@ class ViewController: UIViewController {
     //MARK: - Public Properties
     
     //MARK: - Private Properties
+    private var statisticService = StatisticServiceImplemention()
     
     private var questionFactory: QuestionFactoryProtocol?
-    private let questionAmount = 5
+    private let questionAmount = 10
     private var currentQuestion: QuizQuestion?
     private var alertPresenter: AlertPresenterProtocol?
 
@@ -103,6 +104,12 @@ class ViewController: UIViewController {
         return stack
     }()
     
+    private lazy var activityIndicator: UIActivityIndicatorView = {
+        let activityIndicator = UIActivityIndicatorView()
+        activityIndicator.translatesAutoresizingMaskIntoConstraints = false
+        return activityIndicator
+    }()
+    
     private lazy var fullScreenStack: UIStackView = {
         let stack = UIStackView(arrangedSubviews: [
             topLabelStackView,
@@ -122,10 +129,10 @@ class ViewController: UIViewController {
         super.viewDidLoad()
         view.backgroundColor = .theme.bBlack
         setupViews()
-        questionFactory = QuestionFactory(delegate: self)
-        questionFactory?.requestNextQuestion()
-        
+        questionFactory = QuestionFactory(moviesLoader: MoviesLoader(), delegate: self)
+        questionFactory?.loadData()
         alertPresenter = AlertPresenter(delegate: self)
+        showLoadingIndicator()
     }
     //MARK: - Public Methods
     
@@ -140,13 +147,34 @@ class ViewController: UIViewController {
         handleAnswer(true)
     }
     
-    private func handleAnswer(_ answer: Bool) {
-        guard let currentQuestion = currentQuestion else { return }
-        showAnswerResult(isCorrect: answer == currentQuestion.correctAnser)
+    //Для показа анимации загрузки
+    private func showLoadingIndicator() {
+        activityIndicator.isHidden = false
+        activityIndicator.startAnimating()
+    }
+    //Остановить анимацию и скрыть загрузку
+    private func hideLoadingIndicator() {
+        activityIndicator.isHidden = true
+        activityIndicator.stopAnimating()
+    }
+    //Алерт с ошибкой
+    private func showNetworkError(message: String) {
+        hideLoadingIndicator()
+        let model = AlertModel(
+            title: "Error",
+            message: message,
+            buttonText: "Попробовать еще раз") { [weak self] in
+                guard let self = self else { return }
+                self.currentQuestionIndex = 0
+                self.correctAnswers = 0
+                self.questionFactory?.requestNextQuestion()
+            }
+        alertPresenter?.presentAlert(model)
     }
     
     private func setupViews() {
         view.addSubview(fullScreenStack)
+        view.addSubview(activityIndicator)
         fullScreenStack.translatesAutoresizingMaskIntoConstraints = false
         
         NSLayoutConstraint.activate([
@@ -156,8 +184,16 @@ class ViewController: UIViewController {
                                                      constant: 16),
             fullScreenStack.trailingAnchor.constraint(equalTo: view.trailingAnchor,
                                                       constant: -16),
-            fullScreenStack.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor)
+            fullScreenStack.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
+            
+            activityIndicator.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            activityIndicator.centerYAnchor.constraint(equalTo: view.centerYAnchor)
         ])
+    }
+    
+    private func handleAnswer(_ answer: Bool) {
+        guard let currentQuestion = currentQuestion else { return }
+        showAnswerResult(isCorrect: answer == currentQuestion.correctAnser)
     }
     
     private func showAnswerResult(isCorrect: Bool) {
@@ -182,9 +218,15 @@ class ViewController: UIViewController {
     private func showQuestion() {
         isEnabledButton(true)
         if currentQuestionIndex == questionAmount {
+            statisticService.store(correct: correctAnswers, total: questionAmount)
             let viewModel = QuizResultsViewModel(
                 title: "Этот раунд окончен!",
-                text: "Ваш результат: \(correctAnswers)/\(questionAmount)",
+                text: """
+                        Ваш результат: \(correctAnswers)/\(questionAmount)
+                        Количество сыгранных квизов: \(statisticService.gamesCount)
+                        Рекорд: \(statisticService.bestGame.correct) (\(statisticService.bestGame.date))
+                        Средняя точность: \(statisticService.totalAccuaracy)%
+                        """,
                 buttonText: "Сыграть еще раз")
             endRoundAlert(viewModel)
         } else {
@@ -201,7 +243,7 @@ class ViewController: UIViewController {
     private func convert(model: QuizQuestion) -> QuizStepViewModel {
         let convertedQuestion = QuizStepViewModel(
             questionNumber: "\(currentQuestionIndex + 1)/\(questionAmount)",
-            image: UIImage(named: model.image) ?? UIImage(),
+            image: UIImage(data: model.image) ?? UIImage(),
             question: model.text)
         return convertedQuestion
     }
@@ -228,6 +270,15 @@ class ViewController: UIViewController {
 }
 
 extension ViewController: QuestionFactoryDelegate {
+    func didLoadDataFromServer() {
+        hideLoadingIndicator()
+        questionFactory?.requestNextQuestion()
+    }
+    
+    func didFailtToLoadData(with error: Error) {
+        showNetworkError(message: error.localizedDescription)
+    }
+    
     func didReceiveNextQuestion(question: QuizQuestion?) {
         if let question = question {
             currentQuestion = question
