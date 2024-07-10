@@ -34,6 +34,7 @@ class ViewController: UIViewController {
     
     private lazy var questionCount: UILabel = {
         let label = UILabel()
+        label.accessibilityIdentifier = "Index"
         label.text = "1/10"
         label.font = .systemFont(ofSize: 20, weight: .medium)
         label.textColor = .theme.bWhite
@@ -53,6 +54,7 @@ class ViewController: UIViewController {
     private lazy var questionImage: UIImageView = {
        let image = UIImage(named: "1")
         let imageView = UIImageView(image: image)
+        imageView.accessibilityIdentifier = "Poster"
         imageView.layer.masksToBounds = true
         imageView.layer.cornerRadius = 15
         imageView.contentMode = .scaleToFill
@@ -72,6 +74,7 @@ class ViewController: UIViewController {
     
     private lazy var noButton: UIButton = {
        let button = UIButton()
+        button.accessibilityIdentifier = "Нет"
         button.setTitle("Нет", for: .normal)
         button.titleLabel?.font = .systemFont(ofSize: 20, weight: .medium)
         button.setTitleColor(.theme.bBlack, for: .normal)
@@ -85,6 +88,7 @@ class ViewController: UIViewController {
     private lazy var yesButton: UIButton = {
         let button = UIButton()
         button.setTitle("Да", for: .normal)
+        button.accessibilityIdentifier = "Yes"
         button.titleLabel?.font = .systemFont(ofSize: 20, weight: .medium)
         button.heightAnchor.constraint(equalToConstant: 60).isActive = true
         button.setTitleColor(.theme.bBlack, for: .normal)
@@ -147,31 +151,6 @@ class ViewController: UIViewController {
         handleAnswer(true)
     }
     
-    //Для показа анимации загрузки
-    private func showLoadingIndicator() {
-        activityIndicator.isHidden = false
-        activityIndicator.startAnimating()
-    }
-    //Остановить анимацию и скрыть загрузку
-    private func hideLoadingIndicator() {
-        activityIndicator.isHidden = true
-        activityIndicator.stopAnimating()
-    }
-    //Алерт с ошибкой
-    private func showNetworkError(message: String) {
-        hideLoadingIndicator()
-        let model = AlertModel(
-            title: "Error",
-            message: message,
-            buttonText: "Попробовать еще раз") { [weak self] in
-                guard let self = self else { return }
-                self.currentQuestionIndex = 0
-                self.correctAnswers = 0
-                self.questionFactory?.requestNextQuestion()
-            }
-        alertPresenter?.presentAlert(model)
-    }
-    
     private func setupViews() {
         view.addSubview(fullScreenStack)
         view.addSubview(activityIndicator)
@@ -189,6 +168,30 @@ class ViewController: UIViewController {
             activityIndicator.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             activityIndicator.centerYAnchor.constraint(equalTo: view.centerYAnchor)
         ])
+    }
+    
+    private func showLoadingIndicator() {
+        activityIndicator.isHidden = false
+        activityIndicator.startAnimating()
+    }
+    
+    private func hideLoadingIndicator() {
+        activityIndicator.isHidden = true
+        activityIndicator.stopAnimating()
+    }
+    
+    private func showNetworkError(message: String) {
+        hideLoadingIndicator()
+        let model = AlertModel(
+            title: "Error",
+            message: message,
+            buttonText: "Попробовать еще раз") { [weak self] in
+                guard let self = self else { return }
+                self.currentQuestionIndex = 0
+                self.correctAnswers = 0
+                self.questionFactory?.requestNextQuestion()
+            }
+        alertPresenter?.presentAlert(model)
     }
     
     private func handleAnswer(_ answer: Bool) {
@@ -225,7 +228,7 @@ class ViewController: UIViewController {
                         Ваш результат: \(correctAnswers)/\(questionAmount)
                         Количество сыгранных квизов: \(statisticService.gamesCount)
                         Рекорд: \(statisticService.bestGame.correct) (\(statisticService.bestGame.date))
-                        Средняя точность: \(statisticService.totalAccuaracy)%
+                        Средняя точность: \(String(format: "%.2f", statisticService.totalAccuracy))%
                         """,
                 buttonText: "Сыграть еще раз")
             endRoundAlert(viewModel)
@@ -269,6 +272,7 @@ class ViewController: UIViewController {
     }
 }
 
+//MARK: - QuestionFactoryDelegate
 extension ViewController: QuestionFactoryDelegate {
     func didLoadDataFromServer() {
         hideLoadingIndicator()
@@ -291,6 +295,7 @@ extension ViewController: QuestionFactoryDelegate {
     }
 }
 
+//MARK: - AlertPresenterDelegate
 extension ViewController: AlertPresenterDelegate {
     func endOfGame(_ alert: UIAlertController) {
         present(alert, animated: true)
