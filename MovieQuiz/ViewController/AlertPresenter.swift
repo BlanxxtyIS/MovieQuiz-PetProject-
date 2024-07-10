@@ -23,7 +23,7 @@ class AlertPresenter: AlertPresenterProtocol {
         
         let action = UIAlertAction(title: quiz.buttonText, style: .default) { [weak self] _ in
             guard self != nil else { return }
-            quiz.completion?()
+            quiz.completion()
         }
         
         alertController.addAction(action)

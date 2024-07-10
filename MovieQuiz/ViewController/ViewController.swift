@@ -12,15 +12,14 @@ class ViewController: UIViewController {
     //MARK: - Public Properties
     
     //MARK: - Private Properties
+    private let presenter = MovieQuizPresenter()
+    
     private var statisticService = StatisticServiceImplemention()
     
     private var questionFactory: QuestionFactoryProtocol?
-    private let questionAmount = 10
     private var currentQuestion: QuizQuestion?
     private var alertPresenter: AlertPresenterProtocol?
 
-    //индекс текущего вопроса
-    private var currentQuestionIndex = 0
     //кол-во правильных ответов
     private var correctAnswers = 0
     
@@ -187,7 +186,7 @@ class ViewController: UIViewController {
             message: message,
             buttonText: "Попробовать еще раз") { [weak self] in
                 guard let self = self else { return }
-                self.currentQuestionIndex = 0
+                presenter.resetQuestionIndex()
                 self.correctAnswers = 0
                 self.questionFactory?.requestNextQuestion()
             }
@@ -208,7 +207,7 @@ class ViewController: UIViewController {
         } else {
             questionImage.layer.borderColor = UIColor.theme.bRed?.cgColor
         }
-        currentQuestionIndex += 1
+        presenter.switchToNextQuestion()
         isEnabledButton(false)
         
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
@@ -220,14 +219,14 @@ class ViewController: UIViewController {
     
     private func showQuestion() {
         isEnabledButton(true)
-        if currentQuestionIndex == questionAmount {
-            statisticService.store(correct: correctAnswers, total: questionAmount)
+        if presenter.isLastQuestion() {
+            statisticService.store(correct: correctAnswers, total: presenter.questionAmount)
             let viewModel = QuizResultsViewModel(
                 title: "Этот раунд окончен!",
                 text: """
-                        Ваш результат: \(correctAnswers)/\(questionAmount)
+                        Ваш результат: \(correctAnswers)/\(presenter.questionAmount)
                         Количество сыгранных квизов: \(statisticService.gamesCount)
-                        Рекорд: \(statisticService.bestGame.correct) (\(statisticService.bestGame.date))
+                        Рекорд: \(statisticService.bestGame.correct)\\\(statisticService.bestGame.total) (\(statisticService.bestGame.date.dateTimeString))
                         Средняя точность: \(String(format: "%.2f", statisticService.totalAccuracy))%
                         """,
                 buttonText: "Сыграть еще раз")
@@ -243,14 +242,6 @@ class ViewController: UIViewController {
         questionLabel.text = quiz.question
     }
     
-    private func convert(model: QuizQuestion) -> QuizStepViewModel {
-        let convertedQuestion = QuizStepViewModel(
-            questionNumber: "\(currentQuestionIndex + 1)/\(questionAmount)",
-            image: UIImage(data: model.image) ?? UIImage(),
-            question: model.text)
-        return convertedQuestion
-    }
-    
     private func endRoundAlert(_ quiz: QuizResultsViewModel) {
         let alertModel = AlertModel(
             title: quiz.title,
@@ -262,7 +253,7 @@ class ViewController: UIViewController {
     
     private func newQuizRound() {
         correctAnswers = 0
-        currentQuestionIndex = 0
+        presenter.resetQuestionIndex()
         showQuestion()
     }
     
@@ -286,8 +277,7 @@ extension ViewController: QuestionFactoryDelegate {
     func didReceiveNextQuestion(question: QuizQuestion?) {
         if let question = question {
             currentQuestion = question
-            let currentQuestion = question
-            let viewModel = convert(model: currentQuestion)
+            let viewModel = presenter.convert(model: question)
             DispatchQueue.main.async { [weak self] in
                 self?.setupToShowQuestion(quiz: viewModel)
             }
