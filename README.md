@@ -2,6 +2,9 @@
 
 MovieQuiz - это приложение с квизами о фильмах из топ-250 рейтинга и самых популярных фильмах по версии IMDb.
 
+## **STACK**
+Git, UIKit, Auto Layout, Верстка кодом, API, HTTP, REST, MVP, Figma
+
 ## Запись экранов с демонстрацией работы ##
 
 ![Simulator Screen Recording - iPhone 15 - 2024-07-11 at 17 20 15](https://github.com/BlanxxtyIS/MovieQuiz-PetProject-/assets/136503343/0d8c5b8f-adc6-4284-812a-97a7fac9ff08)
