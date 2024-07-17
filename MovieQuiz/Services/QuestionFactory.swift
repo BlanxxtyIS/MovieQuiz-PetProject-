@@ -19,28 +19,6 @@ class QuestionFactory: QuestionFactoryProtocol {
         self.moviesLoader = moviesLoader
         self.delegate = delegate
     }
-//    private var questions: [QuizQuestion] = [
-//        QuizQuestion(
-//            image: "1",
-//            text: "Рейтинг этого фильма больше 7?",
-//            correctAnser: true),
-//        QuizQuestion(
-//            image: "2",
-//            text: "Рейтинг этого фильма больше 3?",
-//            correctAnser: true),
-//        QuizQuestion(
-//            image: "3",
-//            text: "Рейтинг этого фильма больше 5?",
-//            correctAnser: false),
-//        QuizQuestion(
-//            image: "4",
-//            text: "Рейтинг этого фильма больше 8?",
-//            correctAnser: false),
-//        QuizQuestion(
-//            image: "5",
-//            text: "Рейтинг этого фильма больше 6?",
-//            correctAnser: true)
-//        ]
     
     func loadData() {
         moviesLoader.loadMovies { [weak self] result in
